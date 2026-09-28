@@ -145,11 +145,15 @@ YandexDiskAPI/
 ## ⚙️ Запуск в Github Actions
 
 1. Перейдите в репозиторий `YandexDiskAPI`
-2. Откройте вкладку `Actions`
+2. Перейти на вкладку `Actions`
 3. Выберите workflow `CI Pipeline`
-4. Нажмите `Run workflow`
+4. Кликнуть `Run workflow`
 5. Дождитесь завершения
 
 ---
 
 ## 📊 Allure отчет в Github Actions
+
+1. Перейдите в репозиторий `YandexDiskAPI`
+2. В разделе Deployments кликнуть `github-pages`
+3. В разделе Latest deployments кликнуть ссылку
