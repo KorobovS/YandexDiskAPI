@@ -139,3 +139,11 @@ YandexDiskAPI/
    ```bash
    git clone https://github.com/your-username/YandexDiskAPI.git
    cd YandexDiskAPI
+   
+## ⚙️ Запуск в Github Actions
+
+1. Перейдите в репозиторий `YandexDiskAPI`
+2. Откройте вкладку `Actions`
+3. Выберите workflow `CI Pipeline`
+4. Нажмите `Run workflow`
+5. Дождитесь завершения
