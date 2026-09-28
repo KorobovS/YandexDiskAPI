@@ -19,7 +19,13 @@ public class ConfigReader {
     }
 
     public static String getProperty(String key) {
-        String envValue = System.getenv(key.toUpperCase().replace(".", "_"));
+        String envKey = key.toUpperCase().replace(".", "_");
+        String envValue = System.getenv(envKey);
+
+        if ((envValue == null || envValue.trim().isEmpty()) && "api.token".equals(key)) {
+            envValue = System.getenv("YANDEX_DISK_TOKEN");
+        }
+
         if (envValue != null && !envValue.trim().isEmpty()) {
             return envValue;
         }

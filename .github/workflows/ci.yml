@@ -45,7 +45,7 @@ jobs:
         id: run_tests
         continue-on-error: true
         env:
-          TOKEN: ${{ secrets.YANDEX_DISK_TOKEN }}
+          YANDEX_DISK_TOKEN: ${{ secrets.YANDEX_DISK_TOKEN }}
         run: mvn clean test -D${{ steps.profile.outputs.profile }}
 
       - name: Get Allure history
