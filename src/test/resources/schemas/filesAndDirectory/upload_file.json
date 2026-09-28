@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Upload file",
+  "type": "object",
+  "properties": {
+    "method": {
+      "type": "string"
+    },
+    "href": {
+      "type": "string"
+    },
+    "templated": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "method",
+    "href",
+    "templated"
+  ],
+  "additionalProperties": false
+}
