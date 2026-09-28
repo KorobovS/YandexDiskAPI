@@ -9,10 +9,11 @@ public class ConfigReader {
 
     static {
         try (InputStream input = ConfigReader.class.getClassLoader().getResourceAsStream("config.properties")) {
-            if (input == null) {
-                throw new RuntimeException("Не удалось найти файл config.properties в classpath");
+            if (input != null) {
+                properties.load(input);
+            } else {
+                System.out.println("[ConfigReader] Файл config.properties не найден. Будут использованы только переменные окружения.");
             }
-            properties.load(input);
         } catch (IOException ex) {
             throw new RuntimeException("Ошибка при чтении файла config.properties", ex);
         }
@@ -27,12 +28,14 @@ public class ConfigReader {
         }
 
         if (envValue != null && !envValue.trim().isEmpty()) {
-            return envValue;
+            return envValue.trim();
         }
 
         String propValue = properties.getProperty(key);
         if (propValue == null || propValue.trim().isEmpty()) {
-            throw new RuntimeException("Свойство '" + key + "' не найдено или пустое в config.properties");
+            throw new RuntimeException("Свойство '" + key + "' не найдено. " +
+                    "Убедитесь, что оно есть в config.properties или передано как переменная окружения (" +
+                    envKey + " или YANDEX_DISK_TOKEN).");
         }
 
         return propValue.trim();
