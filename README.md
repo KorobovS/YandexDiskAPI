@@ -140,6 +140,8 @@ YandexDiskAPI/
    git clone https://github.com/your-username/YandexDiskAPI.git
    cd YandexDiskAPI
    
+---
+   
 ## ⚙️ Запуск в Github Actions
 
 1. Перейдите в репозиторий `YandexDiskAPI`
@@ -147,3 +149,7 @@ YandexDiskAPI/
 3. Выберите workflow `CI Pipeline`
 4. Нажмите `Run workflow`
 5. Дождитесь завершения
+
+---
+
+## 📊 Allure отчет в Github Actions
