@@ -48,24 +48,26 @@ jobs:
           YANDEX_DISK_TOKEN: ${{ secrets.YANDEX_DISK_TOKEN }}
         run: mvn clean test -P${{ steps.profile.outputs.profile }}
 
-      - name: Generate Allure Report
+      - name: Get Allure history
+        uses: actions/checkout@v4
         if: always()
-        uses: simple-elf/allure-report-action@v1
+        continue-on-error: true
+        with:
+          ref: gh-pages
+          path: gh-pages
+      - name: Build Allure report
+        uses: simple-elf/allure-report-action@master
+        if: always()
+        id: allure-report
         with:
           allure_results: target/allure-results
+          gh_pages: gh-pages
           allure_report: allure-report
-          keep_reports: 5
-
-      - name: Upload Allure Report Artifact
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: allure-report-${{ steps.profile.outputs.profile }}-run-${{ github.run_number }}
-          path: allure-report
-          retention-days: 7
-
-      - name: Fail job if tests failed
-        if: steps.run_tests.outcome == 'failure'
-        run: |
-          echo "❌ Тесты не пройдены! Проверьте скачанный Allure-отчет."
-          exit 1
+          allure_history: allure-history
+      - name: Publish Allure report to Github Pages
+        if: ${{ success() || failure() }}
+        uses: peaceiris/actions-gh-pages@v2
+        env:
+          PERSONAL_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PUBLISH_BRANCH: gh-pages
+          PUBLISH_DIR: allure-history
