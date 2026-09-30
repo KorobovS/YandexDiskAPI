@@ -30,14 +30,14 @@ jobs:
         run: |
           if [[ "${{ github.event_name }}" == "schedule" ]]; then
             if [[ "${{ github.event.schedule }}" == "0 6 * * *" ]]; then
-              echo "profile=all" >> $GITHUB_OUTPUT
+              echo "command=mvn clean test" >> $GITHUB_OUTPUT
             elif [[ "${{ github.event.schedule }}" == "0 7 * * *" ]]; then
-              echo "profile=positive" >> $GITHUB_OUTPUT
+              echo "command=mvn test -Dgroups=positive" >> $GITHUB_OUTPUT
             else
-              echo "profile=all" >> $GITHUB_OUTPUT
+              echo "command=mvn clean test" >> $GITHUB_OUTPUT
             fi
           else
-            echo "profile=all" >> $GITHUB_OUTPUT
+            echo "command=mvn clean test" >> $GITHUB_OUTPUT
           fi
           echo "✅ Selected profile: ${{ steps.profile.outputs.profile }}"
 
@@ -65,6 +65,7 @@ jobs:
           gh_pages: gh-pages
           allure_report: allure-report
           allure_history: allure-history
+          keep_reports: 10
 
       - name: Publish Allure report to Github Pages
         if: ${{ success() || failure() }}
