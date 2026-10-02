@@ -13,6 +13,9 @@ on:
 jobs:
   test-and-report:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pages: write
 
     steps:
       - name: Checkout code
@@ -28,11 +31,9 @@ jobs:
       - name: Determine Test Profile
         id: profile
         run: |
-          # Проверяем, что это schedule и конкретно крон на 07:00
           if [[ "${{ github.event_name }}" == "schedule" && "${{ github.event.schedule }}" == "0 7 * * *" ]]; then
             echo "args=-Dgroups=positive" >> $GITHUB_OUTPUT
           else
-            # Для всех остальных случаев аргументы пустые
             echo "args=" >> $GITHUB_OUTPUT
           fi
           echo "✅ Selected args: ${{ steps.profile.outputs.args }}"
@@ -61,7 +62,7 @@ jobs:
           gh_pages: gh-pages
           allure_report: allure-report
           allure_history: allure-history
-          keep_reports: 100
+          keep_reports: 10
 
       - name: Publish Allure report to Github Pages
         if: ${{ success() || failure() }}
