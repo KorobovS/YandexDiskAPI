@@ -13,6 +13,9 @@ on:
 jobs:
   test-and-report:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pages: write
 
     steps:
       - name: Checkout code
@@ -28,25 +31,19 @@ jobs:
       - name: Determine Test Profile
         id: profile
         run: |
-          if [[ "${{ github.event_name }}" == "schedule" ]]; then
-            if [[ "${{ github.event.schedule }}" == "0 6 * * *" ]]; then
-              echo "command=mvn clean test" >> $GITHUB_OUTPUT
-            elif [[ "${{ github.event.schedule }}" == "0 7 * * *" ]]; then
-              echo "command=mvn test -Dgroups=positive" >> $GITHUB_OUTPUT
-            else
-              echo "command=mvn clean test" >> $GITHUB_OUTPUT
-            fi
+          if [[ "${{ github.event_name }}" == "schedule" && "${{ github.event.schedule }}" == "0 7 * * *" ]]; then
+            echo "args=-Dgroups=positive" >> $GITHUB_OUTPUT
           else
-            echo "command=mvn clean test" >> $GITHUB_OUTPUT
+            echo "args=" >> $GITHUB_OUTPUT
           fi
-          echo "✅ Selected profile: ${{ steps.profile.outputs.profile }}"
+          echo "✅ Selected args: ${{ steps.profile.outputs.args }}"
 
       - name: Run Tests
         id: run_tests
         continue-on-error: true
         env:
           YANDEX_DISK_TOKEN: ${{ secrets.YANDEX_DISK_TOKEN }}
-        run: mvn clean test -D${{ steps.profile.outputs.profile }}
+        run: mvn clean test ${{ steps.profile.outputs.args }}
 
       - name: Get Allure history
         uses: actions/checkout@v4
