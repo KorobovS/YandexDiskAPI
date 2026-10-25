@@ -47,6 +47,18 @@ jobs:
           YANDEX_DISK_TOKEN: ${{ secrets.YANDEX_DISK_TOKEN }}
         run: mvn clean test ${{ steps.profile.outputs.args }}
 
+      - name: Debug Check allure-results location
+        if: always()
+        run: |
+          echo "=== Checking target/allure-results ==="
+          ls -la target/allure-results 2>/dev/null || echo "❌ target/allure-results не найден"
+          
+          echo "=== Checking allure-results (root) ==="
+          ls -la allure-results 2>/dev/null || echo "❌ allure-results в корне не найден"
+          
+          echo "=== Searching for allure results ==="
+          find . -name "*.json" -path "*/allure*" 2>/dev/null | head -20
+
       - name: Get Allure history
         uses: actions/checkout@v4
         if: always()
