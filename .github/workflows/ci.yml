@@ -47,17 +47,20 @@ jobs:
           YANDEX_DISK_TOKEN: ${{ secrets.YANDEX_DISK_TOKEN }}
         run: mvn clean test ${{ steps.profile.outputs.args }}
       
-      - name: Debug Check allure-results location
+      - name: Debug Check allure-results content
         if: always()
         run: |
-          echo "=== Checking target/allure-results ==="
-          ls -la target/allure-results 2>/dev/null || echo "[FAIL] target/allure-results not found"
+          echo "=== Files in target/allure-results ==="
+          ls -la target/allure-results/
           
-          echo "=== Checking allure-results (root) ==="
-          ls -la allure-results 2>/dev/null || echo "[FAIL] allure-results in root not found"
+          echo "=== JSON files count ==="
+          find target/allure-results -name "*.json" | wc -l
           
-          echo "=== Searching for allure results ==="
-          find . -name "*.json" -path "*/allure*" 2>/dev/null | head -20
+          echo "=== First 10 JSON files ==="
+          find target/allure-results -name "*.json" | head -10
+          
+          echo "=== All files with extensions ==="
+          find target/allure-results -type f | sed 's/.*\.//' | sort | uniq -c
           
       - name: Get Allure history
         uses: actions/checkout@v4
