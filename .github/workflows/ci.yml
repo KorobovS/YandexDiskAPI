@@ -51,10 +51,10 @@ jobs:
         if: always()
         run: |
           echo "=== Checking target/allure-results ==="
-          ls -la target/allure-results 2>/dev/null || echo "❌ target/allure-results не найден"
+          ls -la target/allure-results 2>/dev/null || echo "[FAIL] target/allure-results not found"
           
           echo "=== Checking allure-results (root) ==="
-          ls -la allure-results 2>/dev/null || echo "❌ allure-results в корне не найден"
+          ls -la allure-results 2>/dev/null || echo "[FAIL] allure-results in root not found"
           
           echo "=== Searching for allure results ==="
           find . -name "*.json" -path "*/allure*" 2>/dev/null | head -20
