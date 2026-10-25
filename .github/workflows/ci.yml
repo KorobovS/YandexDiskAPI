@@ -46,8 +46,8 @@ jobs:
         env:
           YANDEX_DISK_TOKEN: ${{ secrets.YANDEX_DISK_TOKEN }}
         run: mvn clean test ${{ steps.profile.outputs.args }}
-
-      - name: Debug: Check allure-results location
+      
+      - name: Debug Check allure-results location
         if: always()
         run: |
           echo "=== Checking target/allure-results ==="
