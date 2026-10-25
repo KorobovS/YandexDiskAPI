@@ -154,6 +154,4 @@ YandexDiskAPI/
 
 ## 📊 Allure отчет в Github Actions
 
-1. Перейдите в репозиторий `YandexDiskAPI`
-2. В разделе Deployments кликнуть `github-pages`
-3. В разделе Latest deployments кликнуть ссылку
+Чтобы посмотреть отчет кликните https://korobovs.github.io/YandexDiskAPI/latest/index.html
