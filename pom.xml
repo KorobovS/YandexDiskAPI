@@ -91,17 +91,6 @@
                         <version>${aspectj.version}</version>
                     </dependency>
                 </dependencies>
-                <executions>
-                    <execution>
-                        <id>positive-tests</id>
-                        <goals>
-                            <goal>test</goal>
-                        </goals>
-                        <configuration>
-                            <groups>positive</groups>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
 
             <plugin>

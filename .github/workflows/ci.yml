@@ -3,11 +3,11 @@ name: CI Pipeline
 on:
   workflow_dispatch:
   push:
-    branches: 
-      - main 
+    branches:
+      - main
   pull_request:
-    branches: 
-      - main 
+    branches:
+      - main
   schedule:
     - cron: "0 6 * * *"
     - cron: "0 7 * * *"
@@ -20,7 +20,7 @@ jobs:
       pages: write
 
     steps:
-      - name: Checkout code 
+      - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Set up JDK 17
@@ -46,22 +46,7 @@ jobs:
         env:
           YANDEX_DISK_TOKEN: ${{ secrets.YANDEX_DISK_TOKEN }}
         run: mvn clean test ${{ steps.profile.outputs.args }}
-      
-      - name: Debug Check allure-results content
-        if: always()
-        run: |
-          echo "=== Files in target/allure-results ==="
-          ls -la target/allure-results/
-          
-          echo "=== JSON files count ==="
-          find target/allure-results -name "*.json" | wc -l
-          
-          echo "=== First 10 JSON files ==="
-          find target/allure-results -name "*.json" | head -10
-          
-          echo "=== All files with extensions ==="
-          find target/allure-results -type f | sed 's/.*\.//' | sort | uniq -c
-          
+
       - name: Get Allure history
         uses: actions/checkout@v4
         if: always()
