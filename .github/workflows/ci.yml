@@ -30,11 +30,6 @@ jobs:
           distribution: 'corretto'
           cache: maven
 
-      - name: Determine Test Profile
-        id: profile
-        run: |
-          if [[ "${{ github.event_name }}" == "schedule" && "${{ github.event.schedule }}" == "0 7 * * *" ]]; then
-
       - name: Run Tests
         id: run_tests
         continue-on-error: true
@@ -53,43 +48,26 @@ jobs:
       - name: Setup Allure CLI
         if: always()
         run: |
-          ALLURE_VERSION=2.29.1
+          ALLURE_VERSION=2.27.0
           wget -q https://repo.maven.apache.org/maven2/io/qameta/allure/allure-commandline/$ALLURE_VERSION/allure-commandline-$ALLURE_VERSION.tgz
           tar -zxvf allure-commandline-$ALLURE_VERSION.tgz
+          echo "$(pwd)/allure-$ALLURE_VERSION/bin" >> $GITHUB_PATH
 
-      - name: Prepare Allure history
+      - name: Build Allure report
+        uses: simple-elf/allure-report-action@master
         if: always()
-        run: |
-          if [ -d "gh-pages/history" ] && [ "$(ls -A gh-pages/history)" ]; then
-            mkdir -p target/allure-results/history
-            cp -r gh-pages/history/* target/allure-results/history/
-
-      - name: Generate Allure Report
-        if: always()
-        run: |
-          allure generate target/allure-results -c -o allure-report
-
-      - name: Prepare Multi-Report Structure
-        if: always()
-        run: |
-          mkdir -p allure-history
-          
-          cp -r allure-report/history allure-history/
-          
-          mkdir -p allure-history/latest
-          cp -r allure-report/* allure-history/latest/
-          
-          REPORT_DATE=$(date +"%Y-%m-%d_%H-%M-%S")
-          cp -r allure-report "allure-history/$REPORT_DATE"
-          
-          cd allure-history
-          ls -t -d [0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]_[0-9][0-9]-[0-9][0-9]-[0-9][0-9]/ 2>/dev/null | tail -n +11 | xargs -r rm -rf
-          cd ..
+        id: allure-report
+        with:
+          allure_results: target/allure-results
+          gh_pages: gh-pages
+          allure_report: allure-report
+          allure_history: allure-history
+          keep_reports: 10
 
       - name: Publish Allure report to Github Pages
-        if: always()
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_branch: gh-pages
-          publish_dir: allure-history
+        if: ${{ success() || failure() }}
+        uses: peaceiris/actions-gh-pages@v2
+        env:
+          PERSONAL_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PUBLISH_BRANCH: gh-pages
+          PUBLISH_DIR: allure-history
