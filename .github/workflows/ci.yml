@@ -60,9 +60,9 @@ jobs:
           ALLURE_VERSION=2.29.1
           echo "📥 Downloading Allure $ALLURE_VERSION..."
           
-          # Скачиваем с GitHub Releases (более надежно)
-          wget -q https://github.com/allure-framework/allure2/releases/download/${ALLURE_VERSION}/allure-${ALLURE_VERSION}.tgz \
-            || { echo "❌ Failed to download Allure"; exit 1; }
+          # Исправленный URL с префиксом 'v' в теге версии
+          wget -q "https://github.com/allure-framework/allure2/releases/download/v${ALLURE_VERSION}/allure-${ALLURE_VERSION}.tgz" \
+            || { echo "❌ Failed to download Allure from GitHub"; exit 1; }
           
           tar -zxvf allure-${ALLURE_VERSION}.tgz
           echo "$(pwd)/allure-${ALLURE_VERSION}/bin" >> $GITHUB_PATH
@@ -84,7 +84,6 @@ jobs:
       - name: Generate Allure Report
         if: always()
         run: |
-          # Проверяем существование папки с результатами
           if [ ! -d "target/allure-results" ] || [ -z "$(ls -A target/allure-results 2>/dev/null)" ]; then
             echo "❌ No allure results found in target/allure-results"
             exit 1
@@ -112,7 +111,7 @@ jobs:
           REPORT_DATE=$(date +"%Y-%m-%d_%H-%M-%S")
           cp -r allure-report "allure-history/$REPORT_DATE"
           
-          # Очистка старых отчетов
+          # Очистка старых отчетов (оставляем 10)
           cd allure-history
           ls -t -d [0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]_[0-9][0-9]-[0-9][0-9]-[0-9][0-9]/ 2>/dev/null | tail -n +11 | xargs -r rm -rf
           cd ..
