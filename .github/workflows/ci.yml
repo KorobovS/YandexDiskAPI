@@ -34,11 +34,6 @@ jobs:
         id: profile
         run: |
           if [[ "${{ github.event_name }}" == "schedule" && "${{ github.event.schedule }}" == "0 7 * * *" ]]; then
-            echo "args=-Dgroups=positive" >> $GITHUB_OUTPUT
-          else
-            echo "args=" >> $GITHUB_OUTPUT
-          fi
-          echo "✅ Selected args: ${{ steps.profile.outputs.args }}"
 
       - name: Run Tests
         id: run_tests
@@ -46,18 +41,6 @@ jobs:
         env:
           YANDEX_DISK_TOKEN: ${{ secrets.YANDEX_DISK_TOKEN }}
         run: mvn clean test ${{ steps.profile.outputs.args }}
-
-      - name: Debug Check allure-results location
-        if: always()
-        run: |
-          echo "=== Checking target/allure-results ==="
-          ls -la target/allure-results 2>/dev/null || echo "❌ target/allure-results не найден"
-          
-          echo "=== Checking allure-results (root) ==="
-          ls -la allure-results 2>/dev/null || echo "❌ allure-results в корне не найден"
-          
-          echo "=== Searching for allure results ==="
-          find . -name "*.json" -path "*/allure*" 2>/dev/null | head -20
 
       - name: Get Allure history
         uses: actions/checkout@v4
@@ -70,44 +53,42 @@ jobs:
       - name: Setup Allure CLI
         if: always()
         run: |
-          # Скачиваем и распаковываем Allure CLI напрямую (без Docker)
-          ALLURE_VERSION=2.27.0
+          ALLURE_VERSION=2.29.1
           wget -q https://repo.maven.apache.org/maven2/io/qameta/allure/allure-commandline/$ALLURE_VERSION/allure-commandline-$ALLURE_VERSION.tgz
           tar -zxvf allure-commandline-$ALLURE_VERSION.tgz
-          echo "$(pwd)/allure-$ALLURE_VERSION/bin" >> $GITHUB_PATH
 
-      - name: Generate Allure Report with History
+      - name: Prepare Allure history
+        if: always()
+        run: |
+          if [ -d "gh-pages/history" ] && [ "$(ls -A gh-pages/history)" ]; then
+            mkdir -p target/allure-results/history
+            cp -r gh-pages/history/* target/allure-results/history/
+
+      - name: Generate Allure Report
+        if: always()
+        run: |
+          allure generate target/allure-results -c -o allure-report
+
+      - name: Prepare Multi-Report Structure
         if: always()
         run: |
           mkdir -p allure-history
           
-          # 1. Восстанавливаем историю предыдущих запусков, если она существует
-          if [ -d "gh-pages/history" ]; then
-            cp -r gh-pages/history allure-history/
-          fi
-          
-          # 2. Генерируем новый отчет (флаг -c очищает папку вывода перед генерацией)
-          allure generate target/allure-results -c -o allure-report
-          
-          # 3. Сохраняем обновленную историю для следующих запусков
           cp -r allure-report/history allure-history/
           
-          # 4. Формируем структуру для публикации (аналог логики simple-elf)
           mkdir -p allure-history/latest
           cp -r allure-report/* allure-history/latest/
           
           REPORT_DATE=$(date +"%Y-%m-%d_%H-%M-%S")
           cp -r allure-report "allure-history/$REPORT_DATE"
           
-          # 5. Очистка старых отчетов (аналог keep_reports: 10)
-          # Оставляем только 10 самых новых датированных папок, не трогая 'latest' и 'history'
           cd allure-history
           ls -t -d [0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]_[0-9][0-9]-[0-9][0-9]-[0-9][0-9]/ 2>/dev/null | tail -n +11 | xargs -r rm -rf
           cd ..
 
       - name: Publish Allure report to Github Pages
-        if: ${{ success() || failure() }}
-        uses: peaceiris/actions-gh-pages@v4 # Рекомендуется обновить с v2 до v4
+        if: always()
+        uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
