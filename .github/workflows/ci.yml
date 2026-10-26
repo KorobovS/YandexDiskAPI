@@ -54,20 +54,11 @@ jobs:
           ref: gh-pages
           path: gh-pages
 
-      - name: Setup Allure CLI
+      - name: Install Allure CLI
         if: always()
-        run: |
-          ALLURE_VERSION=2.29.1
-          echo "📥 Downloading Allure $ALLURE_VERSION..."
-          
-          # Правильный URL без префикса 'v'
-          wget -q "https://github.com/allure-framework/allure2/releases/download/${ALLURE_VERSION}/allure-${ALLURE_VERSION}.tgz" \
-            || { echo "❌ Failed to download Allure"; exit 1; }
-          
-          tar -zxvf allure-${ALLURE_VERSION}.tgz
-          echo "$(pwd)/allure-${ALLURE_VERSION}/bin" >> $GITHUB_PATH
-          
-          allure --version
+        uses: simple-elf/allure-report-action@v1.9
+        with:
+          allure_version: 2.29.0
 
       - name: Prepare Allure history
         if: always()
