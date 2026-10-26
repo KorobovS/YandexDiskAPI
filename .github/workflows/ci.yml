@@ -54,53 +54,54 @@ jobs:
           ref: gh-pages
           path: gh-pages
 
-      - name: Install Allure CLI
-        if: always()
-        uses: simple-elf/allure-report-action@v1.9
-        with:
-          allure_version: 2.29.0
-
       - name: Prepare Allure history
         if: always()
         run: |
           if [ -d "gh-pages/history" ] && [ "$(ls -A gh-pages/history 2>/dev/null)" ]; then
             mkdir -p target/allure-results/history
             cp -r gh-pages/history/* target/allure-results/history/
-            echo "✅ History restored to target/allure-results/history"
+            echo "✅ History restored"
           else
             echo "⚠️ No previous history found"
           fi
 
-      - name: Generate Allure Report with CLI
+      - name: Generate Allure Report with Maven
         if: always()
         run: |
           if [ ! -d "target/allure-results" ] || [ -z "$(ls -A target/allure-results 2>/dev/null)" ]; then
-            echo "❌ No allure results found"
+            echo "❌ No allure results found in target/allure-results"
             exit 1
           fi
           
-          echo "📊 Generating Allure report..."
-          allure generate target/allure-results -c -o allure-report
-          echo "✅ Report generated"
+          echo "📊 Generating Allure report with Maven..."
+          mvn allure:report
+          echo "✅ Report generated in target/site/allure-maven-plugin"
 
       - name: Prepare Multi-Report Structure
         if: always()
         run: |
           mkdir -p allure-history
           
-          # Копируем историю из отчета
-          if [ -d "allure-report/history" ]; then
-            cp -r allure-report/history allure-history/
-            echo "✅ History saved for next runs"
+          # Maven генерирует отчет в target/site/allure-maven-plugin
+          ALLURE_REPORT_DIR="target/site/allure-maven-plugin"
+          
+          if [ ! -d "$ALLURE_REPORT_DIR" ]; then
+            echo "❌ Allure report directory not found"
+            exit 1
+          fi
+          
+          # Копируем историю если она существует
+          if [ -d "$ALLURE_REPORT_DIR/history" ]; then
+            cp -r "$ALLURE_REPORT_DIR/history" allure-history/
           fi
           
           # Формируем папку latest
           mkdir -p allure-history/latest
-          cp -r allure-report/* allure-history/latest/
+          cp -r "$ALLURE_REPORT_DIR"/* allure-history/latest/
           
           # Создаем датированную папку
           REPORT_DATE=$(date +"%Y-%m-%d_%H-%M-%S")
-          cp -r allure-report "allure-history/$REPORT_DATE"
+          cp -r "$ALLURE_REPORT_DIR" "allure-history/$REPORT_DATE"
           
           # Очистка старых отчетов (оставляем 10)
           cd allure-history
