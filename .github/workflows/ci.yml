@@ -54,54 +54,62 @@ jobs:
           ref: gh-pages
           path: gh-pages
 
+      - name: Setup Allure CLI
+        if: always()
+        run: |
+          ALLURE_VERSION=2.29.1
+          echo "📥 Downloading Allure $ALLURE_VERSION..."
+          
+          # Правильный URL без префикса 'v'
+          wget -q "https://github.com/allure-framework/allure2/releases/download/${ALLURE_VERSION}/allure-${ALLURE_VERSION}.tgz" \
+            || { echo "❌ Failed to download Allure"; exit 1; }
+          
+          tar -zxvf allure-${ALLURE_VERSION}.tgz
+          echo "$(pwd)/allure-${ALLURE_VERSION}/bin" >> $GITHUB_PATH
+          
+          allure --version
+
       - name: Prepare Allure history
         if: always()
         run: |
           if [ -d "gh-pages/history" ] && [ "$(ls -A gh-pages/history 2>/dev/null)" ]; then
             mkdir -p target/allure-results/history
             cp -r gh-pages/history/* target/allure-results/history/
-            echo "✅ History restored"
+            echo "✅ History restored to target/allure-results/history"
           else
             echo "⚠️ No previous history found"
           fi
 
-      - name: Generate Allure Report with Maven
+      - name: Generate Allure Report with CLI
         if: always()
         run: |
           if [ ! -d "target/allure-results" ] || [ -z "$(ls -A target/allure-results 2>/dev/null)" ]; then
-            echo "❌ No allure results found in target/allure-results"
+            echo "❌ No allure results found"
             exit 1
           fi
           
-          echo "📊 Generating Allure report with Maven..."
-          mvn allure:report
-          echo "✅ Report generated in target/site/allure-maven-plugin"
+          echo "📊 Generating Allure report..."
+          allure generate target/allure-results -c -o allure-report
+          echo "✅ Report generated"
 
       - name: Prepare Multi-Report Structure
         if: always()
         run: |
           mkdir -p allure-history
           
-          # Maven генерирует отчет в target/site/allure-maven-plugin
-          ALLURE_REPORT_DIR="target/site/allure-maven-plugin"
-          
-          if [ ! -d "$ALLURE_REPORT_DIR" ]; then
-            echo "❌ Allure report directory not found"
-            exit 1
-          fi
-          
-          # Копируем историю если она существует
-          if [ -d "$ALLURE_REPORT_DIR/history" ]; then
-            cp -r "$ALLURE_REPORT_DIR/history" allure-history/
+          # Копируем историю из отчета
+          if [ -d "allure-report/history" ]; then
+            cp -r allure-report/history allure-history/
+            echo "✅ History saved for next runs"
           fi
           
           # Формируем папку latest
           mkdir -p allure-history/latest
-          cp -r "$ALLURE_REPORT_DIR"/* allure-history/latest/
+          cp -r allure-report/* allure-history/latest/
           
           # Создаем датированную папку
           REPORT_DATE=$(date +"%Y-%m-%d_%H-%M-%S")
-          cp -r "$ALLURE_REPORT_DIR" "allure-history/$REPORT_DATE"
+          cp -r allure-report "allure-history/$REPORT_DATE"
           
           # Очистка старых отчетов (оставляем 10)
           cd allure-history
